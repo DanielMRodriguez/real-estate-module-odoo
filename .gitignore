@@ -1,0 +1,34 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Odoo runtime / local data
+odoo-data/
+*.log
+
+# Node/JS (por si algún addon trae tooling)
+node_modules/
+
+# DB dumps (si los manejas aquí)
+*.sql
+*.dump
+*.tar
+backups/
+
+# Docker
+*.pi
+
+.vars
