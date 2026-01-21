@@ -41,13 +41,24 @@ git init
 
 ### 2) Crea la carpeta de datos persistentes
 
-Antes de levantar los contenedores, crea la carpeta `odoo-data` para almacenar los datos de PostgreSQL:
+Antes de levantar los contenedores, crea la carpeta `odoo-data`:
 
-```bash
-mkdir odoo-data
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType Directory -Force -Path odoo-data
 ```
 
-Esta carpeta almacenará la base de datos de forma persistente. **Ya está incluida en el `.gitignore`** para no versionar los datos.
+**Linux/Mac:**
+```bash
+mkdir -p odoo-data
+```
+
+Esta carpeta almacenará datos de sesión de Odoo. **Ya está incluida en el `.gitignore`** para no versionar los datos.
+
+> **Nota para usuarios Linux/Mac**: Asegúrate de que el script `entrypoint.sh` tenga permisos de ejecución:
+> ```bash
+> chmod +x entrypoint.sh
+> ```
 
 ### 3) (Opcional) Configura dependencias de Python
 
@@ -80,7 +91,20 @@ docker compose up -d
 
 Esto iniciará:
 - PostgreSQL 15 (base de datos)
-- Odoo 17 (servidor web)
+- Odoo 17 (servidor web con inicialización automática)
+
+**Primera ejecución**: El proceso tomará aproximadamente 1-2 minutos porque:
+1. PostgreSQL inicializará su base de datos
+2. El script `entrypoint.sh` detectará que es la primera vez
+3. Inicializará automáticamente la base de datos `odoo` con el módulo `base`
+4. Odoo quedará listo para usarse
+
+Puedes monitorear el progreso con:
+```bash
+docker compose logs -f odoo
+```
+
+Busca el mensaje: `"Inicialización completada!"` para saber cuándo está listo.
 
 ### 5) Accede a Odoo
 
@@ -90,18 +114,28 @@ Abre tu navegador en:
 http://localhost:8069
 ```
 
-### 6) Crea tu primera base de datos
+### 6) Usa la base de datos inicializada
 
-En el navegador verás la pantalla de gestión de bases de datos:
+Gracias a la inicialización automática, ya existe una base de datos llamada `odoo` lista para usar.
 
-1. **Master password**: Por defecto es `admin` (o la que definas en el contenedor)
-2. Completa el formulario:
+**Opción A - Usar la base de datos existente "odoo":**
+
+En el navegador verás el login de Odoo. Crea tu usuario administrador:
+1. **Email**: admin
+2. **Password**: admin (cámbiala después)
+
+**Opción B - Crear una nueva base de datos:**
+
+Si prefieres crear una base de datos con otro nombre:
+1. Ve a la pantalla de gestión de bases de datos
+2. **Master password**: Por defecto es `admin`
+3. Completa el formulario:
    - **Database Name**: `mi_base_datos`
    - **Email**: tu email
    - **Password**: contraseña del usuario admin
    - **Language**: Spanish / Español
    - **Country**: tu país
-3. Haz clic en "Create database"
+4. Haz clic en "Create database"
 
 > **Nota**: La "Master Password" no es la contraseña de PostgreSQL, es una clave de seguridad para operaciones de administración de bases de datos desde el UI de Odoo.
 
@@ -113,12 +147,23 @@ En el navegador verás la pantalla de gestión de bases de datos:
 .
 ├── addons/              ← Aquí desarrollas tus módulos personalizados
 │   └── empty_module/    (ejemplo de módulo vacío)
-├── odoo-data/           ← Datos persistentes de PostgreSQL (crear manualmente)
+├── odoo-data/           ← Datos de sesión de Odoo (crear manualmente)
 ├── docker-compose.yml   ← Configuración de servicios Docker
+├── entrypoint.sh        ← Script de inicialización automática de DB
 ├── Dockerfile           ← Para instalar dependencias Python (opcional)
 ├── .gitignore           ← Ignora odoo-data y otros archivos
 └── readme.md            ← Este archivo
 ```
+
+### ⚙️ Inicialización automática
+
+El script `entrypoint.sh` se encarga de:
+1. Esperar a que PostgreSQL esté disponible
+2. Crear la base de datos `odoo` si no existe
+3. Inicializar la base de datos con el módulo `base` en la primera ejecución
+4. Iniciar Odoo normalmente
+
+**Esto significa que no necesitas ejecutar comandos manuales en la primera vez.** Todo se configura automáticamente.
 
 ---
 
@@ -185,17 +230,89 @@ El `docker-compose.yml` está configurado con:
 # Ver logs de Odoo en tiempo real
 docker compose logs -f odoo
 
+# Ver logs desde el inicio
+docker compose logs odoo
+
 # Detener servicios
 docker compose down
 
-# Eliminar todo (incluyendo volúmenes)
+# Eliminar todo (incluyendo volúmenes) - CUIDADO: Borra todas las bases de datos
 docker compose down -v
+
+# Reiniciar solo Odoo
+docker compose restart odoo
 
 # Acceder a la consola de Odoo
 docker compose exec odoo bash
 
 # Acceder a PostgreSQL
-docker compose exec db psql -U odoo
+docker compose exec db psql -U odoo -d odoo
+```
+
+---
+
+## 🔧 Solución de problemas
+
+### Error: "Database odoo not initialized"
+
+Este problema se soluciona automáticamente con el script `entrypoint.sh`. Si aún lo ves:
+
+1. Verifica que el archivo `entrypoint.sh` exista en la raíz del proyecto
+2. Reinicia los contenedores:
+   ```bash
+   docker compose down
+   docker compose up -d
+   ```
+3. Monitorea los logs para ver el proceso de inicialización:
+   ```bash
+   docker compose logs -f odoo
+   ```
+
+### La inicialización toma mucho tiempo
+
+En la primera ejecución, la inicialización del módulo `base` puede tomar 1-3 minutos. Esto es normal. Espera a ver el mensaje `"Inicialización completada!"` en los logs.
+
+### Limpiar todo y empezar de cero
+
+Si algo salió mal y quieres empezar completamente de cero:
+
+**Windows (PowerShell):**
+```powershell
+# Detener y eliminar contenedores y volúmenes
+docker compose down -v
+
+# Eliminar carpeta de datos
+Remove-Item -Recurse -Force odoo-data
+
+# Crear de nuevo
+New-Item -ItemType Directory -Force -Path odoo-data
+
+# Levantar servicios
+docker compose up -d
+```
+
+**Linux/Mac:**
+```bash
+# Detener y eliminar contenedores y volúmenes
+docker compose down -v
+
+# Eliminar carpeta de datos
+rm -rf odoo-data
+
+# Crear de nuevo
+mkdir odoo-data
+
+# Levantar servicios
+docker compose up -d
+```
+
+### Forzar reinicialización manual de la base de datos
+
+Si necesitas reinicializar manualmente la base de datos:
+
+```bash
+docker compose exec odoo odoo --db_host=db --db_user=odoo --db_password=odoo -d odoo -i base --stop-after-init
+docker compose restart odoo
 ```
 
 ---

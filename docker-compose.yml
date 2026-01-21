@@ -22,11 +22,7 @@ services:
     volumes:
       - ./addons:/mnt/extra-addons
       - ./odoo-data:/var/lib/odoo
-    command: >
-      odoo
-      --db_host=db
-      --db_user=odoo
-      --db_password=odoo
-      --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
+      - ./entrypoint.sh:/entrypoint.sh
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
 volumes:
   odoo-db:
