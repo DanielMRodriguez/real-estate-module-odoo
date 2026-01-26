@@ -5,9 +5,18 @@
 
     <!-- First level menu (top bar) -->
     <menuitem id="estate_menu_properties" name="Advertising" parent="estate_menu_root"/>
+    <menuitem id="estate_menu_property_type" name="Settings" parent="estate_menu_root"/>
 
-    <!-- Action menu (click -> action) -->
+    <!-- Advertising menu -->
     <menuitem id="estate_menu_properties_action"
               parent="estate_menu_properties"
               action="estate_property_action"/>
+    <!-- Settings menu -->
+    <menuitem id="estate_menu_property_types_action"
+              parent="estate_menu_property_type"
+              action="estate_menu_property_type_action"/>
+
+    <menuitem id="estate_menu_property_tags_action"
+              parent="estate_menu_property_type"
+              action="estate_menu_property_tag_action"/>
 </odoo>
