@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 
 class EstateProperty(models.Model):
@@ -87,3 +88,28 @@ class EstateProperty(models.Model):
         else:
             self.garden_area = 0
             self.garden_orientation = False
+
+    def cancel_sale_property(self):
+        for property in self:
+            if property.state == 'sold':
+                raise UserError("You cannot cancel a sold property")
+            property.state = 'canceled'
+        return True
+
+    def confirm_sale_property(self):
+        for property in self:
+            if property.state == 'sold':
+                raise UserError("You cannot confirm a sold property")
+            offer_is_accepted = False
+            offer_accepted = None
+            for offer in property.offer_ids:
+                if offer.status == 'accepted':
+                    offer_is_accepted = True
+                    offer_accepted = offer
+                    break
+            if not offer_is_accepted:
+                raise UserError("You cannot confirm a property without an accepted offer")
+            property.state = 'sold'
+            property.selling_price = offer_accepted.price
+            property.buyer_id = offer_accepted.partner_id 
+        return True
