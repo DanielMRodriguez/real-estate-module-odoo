@@ -77,7 +77,7 @@
                             </group>
                         </page>
                         <page string="Offers">
-                            <field name="offer_ids">
+                            <field name="offer_ids" widget="section_and_note_one2many" readonly="state == 'sold' or state == 'canceled'">
                                 <tree>
                                     <field name="partner_id" string="Partner" />
                                     <field name="validity" string="Validity (days)" />
@@ -94,9 +94,9 @@
                                         </attrs>
                                     </field>
                                     <!-- offer_accepted -->
-                                    <button name="accept_offer" string="Accept" type="object" icon="fa-check" invisible="['or', (status != 'draft'), (parent.state != 'offer_accepted')]" />
-                                    <button name="reject_offer" string="Reject" type="object" icon="fa-times" invisible="['or', (status != 'draft'), (parent.state != 'offer_accepted')]" />
-                                    <button name="cancel_offer" string="Cancel" type="object" icon="fa-undo" class="btn-secondary" invisible="status != 'accepted'" />
+                                    <button name="accept_offer" string="Accept" type="object" icon="fa-check" invisible="status != 'draft' or parent.state in ('offer_accepted', 'sold', 'canceled')" />
+                                    <button name="reject_offer" string="Reject" type="object" icon="fa-times" invisible="status != 'draft' or parent.state in ('offer_accepted', 'sold', 'canceled')" />
+                                    <button name="cancel_offer" string="Cancel" type="object" icon="fa-undo" class="btn-secondary" invisible="status != 'accepted' or parent.state in ('sold', 'canceled')" />
                                 </tree>
                             </field>
                         </page>
