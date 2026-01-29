@@ -5,14 +5,14 @@
         <field name="res_model">estate.property.type</field>
         <field name="view_mode">tree,form</field>
     </record>
-    
+
     <record id="estate_property_type_tree_view" model="ir.ui.view">
         <field name="name">estate.property.tree</field>
         <field name="model">estate.property</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="name" class="text-truncate"/>
-                <field name="description" string="Description" class="text-truncate"/>            
+                <field name="name" class="text-truncate" />
+                <field name="description" string="Description" class="text-truncate" />
             </tree>
         </field>
     </record>
@@ -26,7 +26,7 @@
                     <!-- TÍTULO GRANDE -->
                     <div class="oe_title">
                         <h1>
-                            <field name="name" string="Property Type Name" placeholder="Property Type Name"/>
+                            <field name="name" string="Property Type Name" placeholder="Property Type Name" />
                         </h1>
                     </div>
                     <group>
@@ -34,21 +34,30 @@
                             <field name="description" string="Description" />
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Properties">
+                            <field name="property_ids" readonly="1">
+                                <tree>
+                                    <field name="name" string="Title" />
+                                    <field name="expected_price" string="Expected Price" />
+                                    <field name="state" string="State" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
     </record>
-
 
     <record id="estate_property_type_view_search" model="ir.ui.view">
         <field name="name">estate.property.type.view.search</field>
         <field name="model">estate.property.type</field>
         <field name="arch" type="xml">
             <search string="Search Property Types">
-                <field name="name"/>
-                <field name="description"/>
+                <field name="name" />
+                <field name="description" />
             </search>
         </field>
     </record>
-
 </odoo>

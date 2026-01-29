@@ -12,7 +12,7 @@
         <field name="arch" type="xml">
             <tree decoration-danger="state == 'canceled'" decoration-success="state == 'sold'" decoration-warning="state == 'offer_received'" decoration-info="state == 'offer_accepted'">
                 <field name="name" class="text-truncate" />
-                <field name="tag_ids" widget="many2many_tags" />
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" />
                 <field name="state" string="State" />
                 <field name="type_id" string="Property Type" />
                 <field name="postcode" string="Postcode" class="text-truncate" />
@@ -34,8 +34,9 @@
         <field name="arch" type="xml">
             <form string="Property">
                 <header>
-                    <button name="cancel_sale_property" string="Cancel" type="object" class="btn-danger" />
-                    <button name="confirm_sale_property" string="Sold" type="object" class="btn-success" />
+                    <button name="cancel_sale_property" string="Cancel" type="object" class="btn-danger" invisible="state in ['sold', 'canceled']"/>
+                    <button name="confirm_sale_property" string="Sold" type="object" class="btn-success" invisible="state in ['new','sold', 'offer_received', 'canceled']"/>
+                    <field name="state" widget="statusbar" />
                 </header>
                 <sheet>
                     <!-- TÍTULO GRANDE -->
@@ -44,10 +45,10 @@
                             <field name="name" string="Property Name" placeholder="Property Name" />
                         </h1>
                     </div>
+                    <field name="tag_ids" widget="many2many_tags" />
                     <group>
                         <group>
-                            <field name="tag_ids" widget="many2many_tags" />
-                            <field name="type_id" string="Property Type" />
+                            <field name="type_id" string="Property Type" options="{'no_create':True, 'can_write':True}" />
                             <field name="postcode" />
                             <field name="date_availability" />
                         </group>
@@ -55,7 +56,6 @@
                             <field name="expected_price" />
                             <field name="best_price" readonly="1" />
                             <field name="selling_price" readonly="1" />
-                            <field name="state" readonly="1" />
                         </group>
                     </group>
                     <notebook>
@@ -64,15 +64,13 @@
                                 <group>
                                     <field name="description" string="Description" />
                                     <field name="bedrooms" />
-                                    <field name="total_area" readonly="1" />
                                     <field name="living_area" />
                                     <field name="facades" />
-                                </group>
-                                <group>
                                     <field name="garage" />
                                     <field name="garden" />
-                                    <field name="garden_area" />
-                                    <field name="garden_orientation" />
+                                    <field name="garden_area" string="Garden area (m²)" invisible="not garden"/>
+                                    <field name="garden_orientation" string="Garden orientation" invisible="not garden"/>
+                                    <field name="total_area" string="Total area (m²)" readonly="1" />
                                 </group>
                             </group>
                         </page>

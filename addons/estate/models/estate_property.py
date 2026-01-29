@@ -89,6 +89,14 @@ class EstateProperty(models.Model):
             self.garden_area = 0
             self.garden_orientation = False
 
+    # Cuando se haga una oferta, se debe poner el estado de la propiedad a offer_received, pero si esta como offer_accepted, offer_received o sold, no se debe cambiar el estado
+    @api.onchange('offer_ids')
+    def _onchange_offer_ids(self):
+        for property in self:
+            if property.state in ['offer_accepted', 'sold']:
+                return {'warning': {'title': 'Offer received', 'message': 'The property is already in an offer state'}}
+            property.state = 'offer_received'
+
     def cancel_sale_property(self):
         for property in self:
             if property.state == 'sold':
@@ -113,3 +121,8 @@ class EstateProperty(models.Model):
             property.selling_price = offer_accepted.price
             property.buyer_id = offer_accepted.partner_id 
         return True
+    
+    _sql_constraints = [
+        ('check_expected_price', 'CHECK(expected_price > 0)', 'The expected price must be greater than 0'),
+        ('check_selling_price', 'CHECK(selling_price > 0)', 'The selling price must be greater than 0'),
+    ]

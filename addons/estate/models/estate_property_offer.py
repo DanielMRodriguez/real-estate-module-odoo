@@ -1,10 +1,12 @@
 from odoo import api,fields, models
+from odoo.tools import float_compare
 from datetime import date, timedelta
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 class EstatePropertyOffer(models.Model):
     _name = "estate.property.offer"
     _description = "Property Offer"
+    _order = "price DESC"
 
     price = fields.Float(string="Price",required=True,tracking=True)
     status = fields.Selection(
@@ -74,3 +76,12 @@ class EstatePropertyOffer(models.Model):
             # Actualiza el estado de la oferta a draft
             offer.status = "canceled"
         return True
+
+    @api.constrains('price')
+    def _check_price(self):
+        for record in self:
+            # selling prices cannot be lower than 90% of the expected price, use float_compare from odoo.tools
+            if not float_compare(record.price, record.property_id.expected_price * 0.9, precision_digits=2) >= 0:
+                raise ValidationError("The selling price cannot be lower than 90% of the expected price")
+            if record.price <= 0:
+                raise ValidationError("The price must be greater than 0")
