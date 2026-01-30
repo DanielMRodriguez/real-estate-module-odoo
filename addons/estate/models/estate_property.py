@@ -126,3 +126,9 @@ class EstateProperty(models.Model):
         ('check_expected_price', 'CHECK(expected_price > 0)', 'The expected price must be greater than 0'),
         ('check_selling_price', 'CHECK(selling_price > 0)', 'The selling price must be greater than 0'),
     ]
+
+    @api.ondelete(at_uninstall=True)
+    def _unlink_if_not_canceled_or_new(self):
+        for property in self:
+            if property.state not in ['canceled', 'new']:
+                raise UserError("You cannot delete a property that is not canceled or new")

@@ -75,6 +75,11 @@ class EstatePropertyOffer(models.Model):
                 raise UserError("You can only cancel accepted offers")
             # Actualiza el estado de la oferta a draft
             offer.status = "canceled"
+            ##si la propiedad no tiene otras ofertas que no esten canceladas, se debe poner en new, si tiene otras ofertas, se debe poner en offer_received
+            if len(offer.property_id.offer_ids.filtered(lambda o: o.status != "canceled")) == 0:
+                offer.property_id.state = "new"
+            else:
+                offer.property_id.state = "offer_received"   
         return True
 
     @api.constrains('price')
