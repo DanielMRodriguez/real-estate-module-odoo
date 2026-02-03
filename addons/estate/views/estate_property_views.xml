@@ -3,7 +3,7 @@
     <record id="estate_property_action" model="ir.actions.act_window">
         <field name="name">Properties</field>
         <field name="res_model">estate.property</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,kanban</field>
     </record>
 
     <record id="estate_property_tree_view" model="ir.ui.view">
@@ -34,8 +34,8 @@
         <field name="arch" type="xml">
             <form string="Property">
                 <header>
-                    <button name="cancel_sale_property" string="Cancel" type="object" class="btn-danger" invisible="state in ['sold', 'canceled']"/>
-                    <button name="confirm_sale_property" string="Sold" type="object" class="btn-success" invisible="state in ['new','sold', 'offer_received', 'canceled']"/>
+                    <button name="cancel_sale_property" string="Cancel" type="object" class="btn-danger" invisible="state in ['sold', 'canceled']" />
+                    <button name="confirm_sale_property" string="Sold" type="object" class="btn-success" invisible="state in ['new','sold', 'offer_received', 'canceled']" />
                     <field name="state" widget="statusbar" />
                 </header>
                 <sheet>
@@ -68,8 +68,8 @@
                                     <field name="facades" />
                                     <field name="garage" />
                                     <field name="garden" />
-                                    <field name="garden_area" string="Garden area (m²)" invisible="not garden"/>
-                                    <field name="garden_orientation" string="Garden orientation" invisible="not garden"/>
+                                    <field name="garden_area" string="Garden area (m²)" invisible="not garden" />
+                                    <field name="garden_orientation" string="Garden orientation" invisible="not garden" />
                                     <field name="total_area" string="Total area (m²)" readonly="1" />
                                 </group>
                             </group>
@@ -133,6 +133,42 @@
                 <filter name="group_by_user_id" string="Salesperson" context="{'group_by': 'user_id'}" />
                 <filter name="group_by_buyer_id" string="Buyer" context="{'group_by': 'buyer_id'}" />
             </search>
+        </field>
+    </record>
+
+    <record id="estate_property_kanban_view" model="ir.ui.view">
+        <field name="name">estate.property.kanban</field>
+        <field name="model">estate.property</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="type_id">
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <h4>
+                                <b>
+                                    <field name="name" />
+                                </b>
+                            </h4>
+                            <div class="oe_kanban_details">
+                                <p style="font-size: 16px;color: #666; margin-bottom: 5px;">
+                                    Expected Price:
+                                    <field name="expected_price" />
+                                </p>
+                                <div t-if="record.state.raw_value in ['offer_received', 'offer_accepted', 'sold']">
+                                    <p style="font-size: 16px;color: #666; margin-bottom: 5px;">
+                                        Best Offer:
+                                        <field name="best_price" />
+                                    </p>
+                                </div>
+                                <p style="font-size: 16px;color: #666; margin-bottom: 5px;">
+                                    <field name="state" string="State" />
+                                </p>
+                                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" />
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
         </field>
     </record>
 </odoo>
